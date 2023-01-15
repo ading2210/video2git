@@ -1,6 +1,7 @@
 #module for video processing
 
 import cv2
+import math
 
 def extract_video(path):
   capture = cv2.VideoCapture(path)
@@ -13,34 +14,34 @@ def extract_video(path):
       yield img
     
 def process_frame(img, height):
-  #img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+  img = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)
   
   ratio = height / img.shape[0]
-  newsize = round(img.shape[0]*ratio), round(img.shape[1]*ratio)
+  newsize = math.ceil(img.shape[1]*ratio), height
   
   img = cv2.resize(img, newsize, interpolation=cv2.INTER_AREA)
   
   return img
 
 def render_frame(img):
-  height, width, channels = img.shape
+  height, width = img.shape
   out = ""
   
   for y in range(height):
     for x in range(width):
-      pixel = img[y,x][0]
+      pixel = img[y,x]
               
       if pixel > 204:
-        out += "███"
+        out += "██"
       elif pixel > 154:
-        out += "▓▓▓"
+        out += "▓▓"
       elif pixel > 102:
-        out += "▒▒▒"
+        out += "▒▒"
       elif pixel > 51:
-        out += "░░░"
+        out += "░░"
       else:
-        out += "   "
+        out += "  "
       
     out += "\n"
-  
+
   return out[:-1]
