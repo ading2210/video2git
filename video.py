@@ -11,7 +11,7 @@ def extract_video(path):
     success, img = capture.read()
     
     if success:
-      yield img
+      yield img, capture
     
 def process_frame(img, height):
   img = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)

@@ -7,6 +7,14 @@ import os
 
 year_data = {}
 
+import subprocess
+
+def run_cmd(cmd, hide_output=False):
+  if hide_output:
+    subprocess.call(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
+  else:
+    subprocess.call(cmd, shell=True)
+
 #context manager to change back to original directory
 #https://stackoverflow.com/a/37996581
 @contextmanager
