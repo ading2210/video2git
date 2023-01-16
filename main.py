@@ -4,17 +4,19 @@ import os
 import shutil
 import time
 import json
+from pathlib import Path
 
 import video
 import utils
 
-def setup_repo(path):
+def setup_repo(path, url):
   if (os.path.exists(path)):
     shutil.rmtree(path)
   os.mkdir(path)
   
   with utils.change_dir(path):
-    os.system("git init -b main")
+    utils.run_cmd("git init -b main")
+    utils.run_cmd(f'git remote add origin "{url}"')
 
 #todo: allow dates earlier than 1970 using https://stackoverflow.com/a/24977895
 def commit_date(path, date, frame, commit, author):
@@ -29,14 +31,25 @@ def commit_date(path, date, frame, commit, author):
     )
     utils.run_cmd(" ".join(cmd), hide_output=True)
 
-def main(repo_path, video_path, git_author):
+def push_repo(path, user, url, token):
+  url_clean = url.replace("https://","").replace("http://", "")
+  cmd = f'git push https://{user}:{token}@{url_clean} --force'
+  with utils.change_dir(path):
+    utils.run_cmd(cmd, hide_output=True)
+
+def main(config):
   utils.read_year_data()
   
-  setup_repo(repo_path)
+  video_path = str(Path(config["video_path"]).resolve())
+  repo_path = str(Path(config["repo_path"]).resolve())
+  print(video_path)
+  
+  setup_repo(repo_path, config["github_url"])
 
   frame_count = 0
   commit_count = 0
   total_commits = 0
+  old_commit_count = 0
   with utils.change_dir(repo_path): 
     for frame, capture in video.extract_video(video_path):
       os.system("clear")
@@ -62,19 +75,24 @@ def main(repo_path, video_path, git_author):
           
           for i in range(color):
             date = frame_dates[x][y]
-            commit_date(repo_path, date, frame_count, commit_count, git_author)
+            commit_date(repo_path, date, frame_count, commit_count, config["author"])
             
             commit_count += 1
       
-      for i in range(5):
+      for i in range(4):
         date = frame_dates[-1][-1]
-        commit_date(repo_path, date, frame_count, commit_count, git_author)
+        commit_date(repo_path, date, frame_count, commit_count, config["author"])
         commit_count += 1
-
+      
+      if total_commits - old_commit_count >= 500:
+        print("Pushing changes...")
+        push_repo(repo_path, config["author"]["name"], config["github_url"], config["github_token"])
+        old_commit_count = total_commits
+        
       frame_count += 1
 
 if __name__ == "__main__":
   with open("config.json") as f:
     config = json.loads(f.read())
 
-  main(config["repo"], config["video"], config["author"])
+  main(config)

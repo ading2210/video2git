@@ -1,0 +1,10 @@
+{
+  "repo_path": "./repo",
+  "video_path": "./samples/bad_apple.webm",
+  "github_token": "",
+  "github_url": "",
+  "author": {
+    "name": "",
+    "email": ""
+  }
+}
